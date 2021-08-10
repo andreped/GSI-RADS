@@ -3,7 +3,7 @@
 [![license](https://img.shields.io/github/license/DAVFoundation/captain-n3m0.svg?style=flat-square)](https://github.com/DAVFoundation/captain-n3m0/blob/master/LICENSE)
 [![GitHub Downloads](https://img.shields.io/github/downloads/SINTEFMedtek/GSI-RADS/total?label=GitHub%20downloads&logo=github)](https://github.com/SINTEFMedtek/GSI-RADS/releases)
 
-<img src="GIS-RADS_illustration.png" width="70%" height="70%">
+![GSI-RADS](images/GSI-RADS_illustration.png)
 
 ## 1. Description
 The repository contains the software to automatically compute glioblastoma's features from a T1-wighted MRI pre-operative MRI,
@@ -29,20 +29,17 @@ DOI = {10.3390/cancers13122854}}
 ```
 
 ## 2. Softwares and usage
-An executable is provided for the three main Operating Systems: Windows 10 (64-bit), macOS (>= High Sierra), and Ubuntu Linux 18.04.
+An installer is provided for the three main Operating Systems: Windows (v10, 64-bit), macOS (>= High Sierra), and Ubuntu Linux (>= 18.04).
 The software can be downloaded from [here](https://github.com/SINTEFMedtek/GSI-RADS/releases) (see **Assets**). 
 
-### 2.1 Download and installation  
+### 2.1 Download and installation
 These steps are only needed to do once:
-1) Download the executable to your Operating System.  
-2) On macOS/Ubuntu only: Open terminal, write `chmod +x `, drag and drop the file into the terminal window, and click Enter, to enable running program as executable.
-3) Right-click and open to execute the file named GSI-RADS.
+1) Download the installer to your Operating System.
+2) Double click downloaded file and follow instructions to install.
+3) Search for the software "GSI-RADS" and double click to run.
 
-Then for all future use, simply double-click to launch the software.
-
-**GSI-RADS might take up to a minute to start.** This is because the software has to be unpackaged at runtime. Some operating systems run an anti-virus check when unpackaging content. On Windows this is called **real-time protection**. This further slows down the unpackaging process. We will look into how to solve this issue in the near future.
-
-The software may appear unresponsive when running analysis.
+On **macOS** the software may be slow to start **the first time**, due to the firewall checking the software. Otherwise, the GUI should pop up instantly.
+On **Windows** and **Ubuntu Linux** the software may be slow to start as it needs to unpackage the software every time. This has been solved for macOS and will be solved for the two other operating sytems in the near future.
 
 ### 2.2 Usage  
   1) Click 'Input MRI...' to select from your file explorer the MRI scan to process (unique file).  
@@ -54,15 +51,45 @@ The software may appear unresponsive when running analysis.
   NOTE: The output folder is populated automatically with the following:  
        * The diagnosis results in human-readable text (report.txt) and Excel-ready format (report.csv).  
        * The automatic segmentation masks of the brain and the tumor in the original patient space (input_brain_mask.nii.gz and input_tumor_mask.nii.gz).  
-       * The anatomical structures mask in original patient space (input_anatomical_regions_mask.nii.gz).  
+       * The cortical structures mask in original patient space for the different atlases used.  
        * The input volume and tumor segmentation mask in MNI space in the sub-directory named \'registration\'.  
 
 
-## 3. Computed features  
+### 2.3 Computed features  
 The following features are automatically computed and reported to the user:
 - **Multifocality**: whether the tumor is multifocal or not, the total number of foci, and the largest minimum distance between two foci.  
 - **Volume**: total tumor volume in original patient space and MNI space (in ml).  
 - **Laterality**: tumor percentage in each hemisphere, and assessment of midline crossing.  
-- **Resectability**: expected resectbale and residual volumes (in ml), and resection index.  
-- **Subcortical structures**: percentage of the tumor volume overlapping each structure from the MNI atlas, the Hard-Oxford atlas, and Schaefer atlas.  
-- **White matter tracts**: percentage of the tumor volume overlapping each tract from the BrainLab atlas. If no overlap, the minimum distance to the tract is provided (in mm).  
+- **Resectability**: expected residual volumes (in ml) and resection index.  
+- **Cortical structures**: percentage of the tumor volume overlapping each structure from the MNI atlas, the Harvard-Oxford atlas, and Schaefer atlas (version 7 and 17).  
+- **Subcortical structures**: percentage of the tumor volume overlapping each structure from the BCB atlas. If no overlap, the minimum distance to the structure is provided (in mm).  
+
+## 3. Source code usage
+
+### 3.1 Installation
+Use the requirements.txt file to create a virtual environment with the required libraries.
+> virtualenv -p python3 venv  
+> cd venv    
+> source bin/activate  
+> pip install -r ../requirements.txt  
+> deactivate  
+
+Then, to download the trained models locally, run the following:
+> source venv/bin/activate  
+> python setup.py  
+> deactivate  
+
+
+### 3.2 Usage
+The command line input parameters are:
+* -g [--use_gui]: Must be set to 0 to disable the gui, otherwise 1.
+* -i [--input_filename]: Complete path to the MRI volume to process.
+* (optional) -s [--input_tumor_segmentation_filename]: Complete path to the corresponding tumor mask, to avoid re-segmentation.
+* -o [--output_folder]: Main destination directory. A unique timestamped folder will be created inside for each run.
+* -d [--gpu_id]: Number of the GPU to use for the segmentation task. Set the value to -1 to run on CPU.
+
+
+To run directly from command line, without the use of the GUI, run the following:
+> source venv/bin/activate  
+> python main.py -g 0 -i /path/to/volume/T1.nii.gz -o /path/to/output/ -d 0  
+> deactivate  
